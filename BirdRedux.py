@@ -3,7 +3,8 @@ import csv
 from tkinter import *
 from tkinter.ttk import Progressbar
 from tkinter.filedialog import *
-from datetime import datetime
+from dateutil.parser import *
+from datetime import *
 from BirdEntry import *
 from Functions import *
 
@@ -73,9 +74,8 @@ class Window:
         self.hasNameChangeFile = True
 
     def run(self):
-        structArr = []
+        validBirds = []
         mydict = dict()
-        rownum = 0
         nonDupCount = 0
         root.update_idletasks() 
         self.prog_bar["value"] = 0
@@ -86,6 +86,7 @@ class Window:
             self.prog_bar["maximum"] = self.reader.line_num
             
             self.writer.writerow(["Common Name", "Date", "County", "Location", "Breeding Code", "UserID", "Count" , "Species Comments"] )
+
             for row in self.reader:
                 self.prog_bar["value"] += 1
 
@@ -94,19 +95,28 @@ class Window:
                         row.append("")
 
                     birdEntry = BirdEntry(row[1], row[4], row[6], row[7], row[10], row[18] , row[19])
-                    birdHash = birdEntry.commonName + birdEntry.county + birdEntry.date
+                    birdHash = birdEntry.commonName + birdEntry.county + birdEntry.date + birdEntry.breed
 
                     if birdHash in mydict:
                         mydict[birdHash].count += birdEntry.count
                     else:
-                        structArr.append(birdEntry)
-                        mydict[birdHash] = structArr[nonDupCount]
+                        validBirds.append(birdEntry)
+                        mydict[birdHash] = validBirds[nonDupCount]
                         nonDupCount += 1
                         
-                rownum += 1
+            try:
+                start = parse(self.startDate.get())
+            except:
+                start = datetime(1970, 1, 1)
+            try:
+                end = parse(self.endDate.get())
+            except:
+                end = datetime(2070, 1, 1)
 
-            for i in range(nonDupCount):
-                bird = structArr[i]
+            RemoveOutOfDateBirds(validBirds, start, end);
+
+            for i in range(len(validBirds)):
+                bird = validBirds[i]
                 if IsValidBird(bird):
                     self.writer.writerow([bird.commonName, bird.date, bird.county, bird.loc, bird.breed, self.obsId.get(), bird.count, bird.scomm])
 

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-
-
-from datetime import datetime
+from dateutil.parser import *
+from datetime import *
 
 commonNameDict = {}
 
@@ -18,9 +17,9 @@ def getCommonName(bird):
 
 def getBreed(breed):
     abbr = ""
-    breed.split(" ")
+    breedWords = breed.split(" ")
     if breed:
-        abbr = breed[0]
+        abbr = breedWords[0]
     if abbr in { "CF", "CN", "DD", "FL", "FS", "FY", "NB", "NE", "NY", "ON", "PE", "PY", "UN" }:
         return abbr
     else:
@@ -59,3 +58,16 @@ def IsRowInSD(row):
             return True
     except:
         return False
+
+def RemoveOutOfDateBirds(birdArray, start, end):
+    removeArr = []
+    for bird in birdArray:
+        birdDate = parse(bird.date)
+        print str(start) + " < " + str(bird.date) + " < " + str(end)
+        if start > birdDate or birdDate > end:
+            print "removing"
+            removeArr.append(bird)
+            
+    for bird in removeArr:
+        birdArray.remove(bird)
+            
